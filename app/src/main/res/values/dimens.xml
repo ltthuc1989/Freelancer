@@ -5,4 +5,5 @@
 
     <dimen name="progressBar_dimen">200dp</dimen>
     <dimen name ="margin">50dp</dimen>
+    <dimen name = "thick_ness">10dp</dimen>
 </resources>

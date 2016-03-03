@@ -651,6 +651,10 @@ public class TextureVideoView extends TextureView
                 mCircleProgressBar.setProgressWithAnimation(mCircleProgressBar.getMax());
                 isFirstInit=true;
             }
+            if(mCurrentState==STATE_PAUSED){
+                mCircleProgressBar.start();
+            }
+
             mCurrentState = STATE_PLAYING;
         }
         mTargetState = STATE_PLAYING;
@@ -661,7 +665,7 @@ public class TextureVideoView extends TextureView
         if (isInPlaybackState()) {
             if (mMediaPlayer.isPlaying()) {
                 //mCircleProgressBar.getObjectAnimator().pause();
-
+                mCircleProgressBar.pause();
                 mMediaPlayer.pause();
                 mCurrentState = STATE_PAUSED;
             }

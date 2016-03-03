@@ -17,6 +17,7 @@
 package com.ltthuc.freelancer.CustomView;
 
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
@@ -34,7 +35,7 @@ import com.ltthuc.freelancer.R;
  *
  * Created by Pedram on 2015-01-06.
  */
-public class CircleProgressBar extends View {
+public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUpdateListener{
 
 
     /**
@@ -56,6 +57,8 @@ public class CircleProgressBar extends View {
     private Paint foregroundPaint;
 
     private ObjectAnimator objectAnimator;
+    private long mAnimationTime;
+    private float mCurrentProgress;
 
     public int getStartAngle() {
         return startAngle;
@@ -223,7 +226,11 @@ public class CircleProgressBar extends View {
          objectAnimator = ObjectAnimator.ofFloat(this, "progress", progress);
         objectAnimator.setDuration(getDuration());
         objectAnimator.setInterpolator(new DecelerateInterpolator());
+        objectAnimator.addUpdateListener(this);
         objectAnimator.start();
+
+
+
 
 
     }
@@ -232,6 +239,35 @@ public class CircleProgressBar extends View {
         return objectAnimator;
     }
 
+    @Override
+    public void onAnimationUpdate(ValueAnimator animation) {
+
+    }
+
+
+    public void pause() {
+        if(objectAnimator != null) {
+            mAnimationTime = objectAnimator.getCurrentPlayTime();
+            objectAnimator.cancel();
+            setProgress(getCurrentProgress());
+        }
+    }
+
+    public void start() {
+        if (objectAnimator != null) {
+            objectAnimator.start();
+            objectAnimator.setCurrentPlayTime(mAnimationTime);
+        }
+    }
+
+    public float getCurrentProgress(){
+        float duration =(float)getDuration();
+        float animationTime =(float)mAnimationTime;
+        mCurrentProgress = (animationTime/duration)*100;
+
+
+        return mCurrentProgress;
+    }
 
 }
 
