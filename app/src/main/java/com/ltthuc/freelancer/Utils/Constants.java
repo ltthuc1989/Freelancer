@@ -17,6 +17,8 @@ public class Constants {
     public  final  static int PLAY_TIME_OPTION_2 = 45000;
     public  final  static int BREAK_TIME_OPTION_2= 15000;
 
+    public final   static int MEDIAPLAYER_SIZE = 7;
+
 
 
 }

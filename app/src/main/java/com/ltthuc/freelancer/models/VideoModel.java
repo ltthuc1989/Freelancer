@@ -1,5 +1,7 @@
 package com.ltthuc.freelancer.models;
 
+import android.app.Activity;
+
 import com.ltthuc.freelancer.Utils.Constants;
 
 /**
@@ -7,16 +9,24 @@ import com.ltthuc.freelancer.Utils.Constants;
  */
 public class VideoModel {
     int option;
-    int rawFile ;
+    int rawFile;
     int playTime;
     int breakTime;
     int id;
+    String videoPath;
+    Activity context;
 
-    public VideoModel(int id, int option,int rawFile){
+    public VideoModel(Activity context, int id, int option, int rawFile) {
         this.id = id;
         this.option = option;
         this.rawFile = rawFile;
+        this.context = context;
+        initPlayTime();
 
+    }
+
+    public String getVideoPath() {
+        return "android.resource://" + context.getPackageName() + "/" + rawFile;
     }
 
     public int getOption() {
@@ -35,25 +45,29 @@ public class VideoModel {
         this.rawFile = rawFile;
     }
 
-    public int getPlayTime() {
-        switch (option){
+    public void initPlayTime() {
+        switch (option) {
             case 1:
 
-                if(id==0||id==6){
+                if (id == 0 || id == 6) {
                     playTime = Constants.PLAY_TIME_OPTION_1;
-                }else{
-                    playTime = Constants.PLAY_TIME_OPTION_1*2;
+                } else {
+                    playTime = Constants.PLAY_TIME_OPTION_1 * 2;
                 }
 
                 break;
             case 2:
-                if(id==0||id==6){
+                if (id == 0 || id == 6) {
                     playTime = Constants.PLAY_TIME_OPTION_2;
-                }else{
+                } else {
                     playTime = Constants.PLAY_TIME_OPTION_2 + Constants.BREAK_TIME_OPTION_2;
                 }
                 break;
         }
+
+    }
+
+    public int getPlayTime() {
         return playTime;
     }
 
@@ -61,8 +75,8 @@ public class VideoModel {
         this.playTime = playTime;
     }
 
-    public int getBreakTime() {
-        switch (option){
+    public void initBreakTime() {
+        switch (option) {
             case 1:
                 breakTime = Constants.BREAK_TIME_OPTION_1;
                 break;
@@ -70,10 +84,11 @@ public class VideoModel {
                 breakTime = Constants.BREAK_TIME_OPTION_2;
                 break;
         }
+
+    }
+
+    public int getBreakTime() {
         return breakTime;
     }
 
-    public void setBreakTime(int breakTime) {
-        this.breakTime = breakTime;
-    }
 }

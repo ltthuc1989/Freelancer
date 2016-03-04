@@ -39,7 +39,10 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.MediaController;
 import android.widget.MediaController.MediaPlayerControl;
 
+import com.ltthuc.freelancer.models.VideoModel;
+
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -108,6 +111,9 @@ public class TextureVideoView extends TextureView
     private boolean     mCanSeekBack;
     private boolean     mCanSeekForward;
     boolean isFirstInit = false;
+    private int currentPosition;
+    private int mediaSize;
+    private List<VideoModel> playList;
 
     public TextureVideoView(Context context) {
         super(context);
@@ -204,6 +210,27 @@ public class TextureVideoView extends TextureView
         return getDefaultSize(desiredSize, measureSpec);
     }
 
+    public void setCurrentPosition(int currentPosition) {
+        this.currentPosition = currentPosition;
+    }
+
+    public int getMediaSize() {
+        mediaSize =playList.size();
+        return mediaSize;
+    }
+
+    public void setMediaSize(int mediaSize) {
+        this.mediaSize = mediaSize;
+    }
+
+    public List<VideoModel> getPlayList() {
+        return playList;
+    }
+
+    public void setPlayList(List<VideoModel> playList) {
+        this.playList = playList;
+    }
+
     private void initVideoView() {
         mVideoWidth = 0;
         mVideoHeight = 0;
@@ -214,6 +241,14 @@ public class TextureVideoView extends TextureView
         mCurrentState = STATE_IDLE;
         mTargetState  = STATE_IDLE;
 
+    }
+
+    public MediaPlayer getMediaPlayer() {
+        return mMediaPlayer;
+    }
+
+    public void setmMediaPlayer(MediaPlayer mMediaPlayer) {
+        this.mMediaPlayer = mMediaPlayer;
     }
 
     /**
@@ -647,7 +682,7 @@ public class TextureVideoView extends TextureView
         if (isInPlaybackState()) {
             mMediaPlayer.start();
             if(!isFirstInit) {
-                mCircleProgressBar.setDuration(getDuration());
+                mCircleProgressBar.setDuration(playList.get(0).getPlayTime());
                 mCircleProgressBar.setProgressWithAnimation(mCircleProgressBar.getMax());
                 isFirstInit=true;
             }
@@ -759,4 +794,62 @@ public class TextureVideoView extends TextureView
     public void setmCircleProgressBar(CircleProgressBar mCircleProgressBar) {
         this.mCircleProgressBar = mCircleProgressBar;
     }
+
+    public MediaController getmMediaController() {
+        return mMediaController;
+    }
+
+    public void setmMediaController(MediaController mMediaController) {
+        this.mMediaController = mMediaController;
+    }
+    public void playNext(){
+        if(currentPosition<getMediaSize())
+        {
+            mMediaPlayer.reset();
+       /* load the new source */
+
+
+       /* Prepare the mediaplayer */
+            try {
+                mMediaPlayer.setDataSource(playList.get(currentPosition+1).getVideoPath());
+                mMediaPlayer.prepare();
+                currentPosition = currentPosition+1;
+            }catch (IOException err){
+
+            }
+       /* start */
+            mMediaPlayer.start();
+        }
+        else
+        {
+       /* release mediaplayer */
+            mMediaPlayer.release();
+        }
+    }
+    public void playPrevious(){
+        if(currentPosition>0)
+        {
+            mMediaPlayer.reset();
+       /* load the new source */
+
+
+       /* Prepare the mediaplayer */
+            try {
+                mMediaPlayer.setDataSource(playList.get(currentPosition-1).getVideoPath());
+                mMediaPlayer.prepare();
+                currentPosition = currentPosition-1;
+            }catch (IOException err){
+
+            }
+       /* start */
+            mMediaPlayer.start();
+        }
+        else
+        {
+       /* release mediaplayer */
+            mMediaPlayer.release();
+        }
+    }
+
+
 }

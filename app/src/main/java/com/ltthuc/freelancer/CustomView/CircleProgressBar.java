@@ -16,6 +16,7 @@
 
 package com.ltthuc.freelancer.CustomView;
 
+import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
@@ -27,6 +28,7 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.DecelerateInterpolator;
+import android.widget.TextView;
 
 import com.ltthuc.freelancer.R;
 
@@ -35,7 +37,7 @@ import com.ltthuc.freelancer.R;
  *
  * Created by Pedram on 2015-01-06.
  */
-public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUpdateListener{
+public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUpdateListener,ObjectAnimator.AnimatorListener{
 
 
     /**
@@ -59,6 +61,7 @@ public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUp
     private ObjectAnimator objectAnimator;
     private long mAnimationTime;
     private float mCurrentProgress;
+    TextView txtCountDown;
 
     public int getStartAngle() {
         return startAngle;
@@ -80,6 +83,15 @@ public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUp
         return strokeWidth;
     }
 
+    public TextView getTxtCountDown() {
+        return txtCountDown;
+    }
+
+    public void setTxtCountDown(TextView txtCountDown) {
+        this.txtCountDown = txtCountDown;
+    }
+
+    ProgressBarCallback progressBarCallback;
     public void setStrokeWidth(float strokeWidth) {
         this.strokeWidth = strokeWidth;
         backgroundPaint.setStrokeWidth(strokeWidth);
@@ -241,9 +253,30 @@ public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUp
 
     @Override
     public void onAnimationUpdate(ValueAnimator animation) {
+        txtCountDown.setText(String.valueOf(getCurrentProgress()));
 
     }
 
+    @Override
+    public void onAnimationStart(Animator animation) {
+
+    }
+
+    @Override
+    public void onAnimationEnd(Animator animation) {
+        progressBarCallback.finishProgress();
+
+    }
+
+    @Override
+    public void onAnimationCancel(Animator animation) {
+
+    }
+
+    @Override
+    public void onAnimationRepeat(Animator animation) {
+
+    }
 
     public void pause() {
         if(objectAnimator != null) {
@@ -268,7 +301,17 @@ public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUp
 
         return mCurrentProgress;
     }
+    public interface ProgressBarCallback{
+        void finishProgress();
+    }
 
+    public ProgressBarCallback getProgressBarCallback() {
+        return progressBarCallback;
+    }
+
+    public void setProgressBarCallback(ProgressBarCallback progressBarCallback) {
+        this.progressBarCallback = progressBarCallback;
+    }
 }
 
 

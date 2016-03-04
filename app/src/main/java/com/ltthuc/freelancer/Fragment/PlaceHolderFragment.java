@@ -1,13 +1,20 @@
 package com.ltthuc.freelancer.Fragment;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
+import android.media.ThumbnailUtils;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.MediaController;
+import android.widget.TextView;
 
 import com.ltthuc.freelancer.CustomView.CircleProgressBar;
 import com.ltthuc.freelancer.CustomView.TextureVideoView;
@@ -24,7 +31,7 @@ import butterknife.OnClick;
 /**
  * Created by Thuc on 3/2/2016.
  */
-public class PlaceHolderFragment extends Fragment {
+public class PlaceHolderFragment extends Fragment implements CircleProgressBar.ProgressBarCallback {
 
 
     @Bind(R.id.video_view)
@@ -45,6 +52,12 @@ public class PlaceHolderFragment extends Fragment {
     int optionMode = 1;
 
     int[] rawFiles = {R.raw.video1, R.raw.video2, R.raw.video3, R.raw.video4, R.raw.video5, R.raw.video6, R.raw.video7};
+    @Bind(R.id.btnOption1)
+    Button btnOption1;
+    @Bind(R.id.btnOption2)
+    Button btnOption2;
+    @Bind(R.id.txtCountDown)
+    TextView txtCountDown;
 
     public PlaceHolderFragment() {
     }
@@ -54,7 +67,7 @@ public class PlaceHolderFragment extends Fragment {
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
         ButterKnife.bind(this, rootView);
-        playVideo(0);
+        initData();
         return rootView;
     }
 
@@ -77,31 +90,43 @@ public class PlaceHolderFragment extends Fragment {
 
     private void initData() {
         initVideoModels();
+        initProgressBar();
+        initVideoView();
 
     }
+    private void initProgressBar(){
+        VideoModel videoModel = videoModels_Option_1.get(0);
+        int duration = videoModel.getPlayTime()+videoModel.getBreakTime();
+        customProgressBar.setTxtCountDown(txtCountDown);
+        customProgressBar.setDuration(duration);
+    }
+
+    private void initVideoView() {
+
+        mVideoView.setmCircleProgressBar(customProgressBar);
+        mVideoView.setPlayList(videoModels_Option_1);
+        mVideoView.setVideoPath(videoModels_Option_1.get(0).getVideoPath());
+        mVideoView.setMediaController(new MediaController(getActivity()));
+        mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(final MediaPlayer mp) {
+                //mp.setLooping(true);
+                startVideoPlayback();
+                startVideoAnimation();
+            }
+        });
+
+    }
+
 
     private void initVideoModels() {
         videoModels_Option_1 = new ArrayList<>();
         videoModels_Option_2 = new ArrayList<>();
         for (int i = 0; i < 7; i++) {
-            videoModels_Option_1.add(new VideoModel(i, 1, rawFiles[i]));
-            videoModels_Option_2.add(new VideoModel(i, 2, rawFiles[i]));
+            videoModels_Option_1.add(new VideoModel(getActivity(), i, 1, rawFiles[i]));
+            videoModels_Option_2.add(new VideoModel(getActivity(), i, 2, rawFiles[i]));
         }
     }
-
-    private void playVideo(int id) {
-        mVideoView.setmCircleProgressBar(customProgressBar);
-        mVideoView.setVideoPath(getVideoPath());
-        mVideoView.setMediaController(new MediaController(getActivity()));
-        mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(final MediaPlayer mp) {
-                startVideoPlayback();
-                startVideoAnimation();
-            }
-        });
-    }
-
 
 
     private void startVideoPlayback() {
@@ -115,38 +140,60 @@ public class PlaceHolderFragment extends Fragment {
         mVideoView.animate().setDuration(mVideoView.getDuration()).start();
     }
 
-    private String getVideoPath() {
-        return "android.resource://" + getActivity().getPackageName() + "/" + R.raw.video;
-    }
 
+    private Drawable getThumbnail(String path) {
+        Drawable drawable;
+        Bitmap bitmap;
+        try {
+            bitmap = ThumbnailUtils.createVideoThumbnail(path, MediaStore.Images.Thumbnails.MINI_KIND);
+            drawable = new BitmapDrawable(getResources(), bitmap);
+        } catch (Exception e) {
+            return null;
+        }
+        return drawable;
+    }
 
     @OnClick({R.id.img_prev, R.id.img_play, R.id.img_next})
     public void onClick(View view) {
+        MediaPlayer mediaPlayer = mVideoView.getMediaPlayer();
         switch (view.getId()) {
+
             case R.id.img_prev:
-                if (optionMode == 1) {
-                    if (steps_option_1 > 0) {
-                        steps_option_1 = steps_option_1 - 1;
-                    }
-                } else {
-                    if (steps_option_1 > 0) {
-                        steps_option_2 = steps_option_2 - 1;
-                    }
-                }
+                mVideoView.playPrevious();
                 break;
             case R.id.img_play:
+                if (mediaPlayer.isPlaying()) {
+                    mVideoView.getMediaPlayer().pause();
+                } else if (!mediaPlayer.isPlaying() && mediaPlayer != null) {
+                    mediaPlayer.start();
+                }
                 break;
             case R.id.img_next:
-                if (optionMode == 1) {
-                    if (steps_option_1 < 6) {
-                        steps_option_1 = steps_option_1 + 1;
-                    }
-                } else {
-                    if (steps_option_1 < 6) {
-                        steps_option_2 = steps_option_2 + 1;
-                    }
-                }
+                mVideoView.playNext();
                 break;
         }
     }
+
+//    private void intCountDown() {
+//
+//        txtCountDown.setTime(50000);
+//        txtCountDown.setOnTimerListener(new CountDownTimerView.TimerListener() {
+//            @Override
+//            public void onTick(long millisUntilFinished) {
+//
+//            }
+//
+//            @Override
+//            public void onFinish() {
+//                //timerView.setText("Time up!");
+//            }
+//        });
+//    }
+
+    @Override
+    public void finishProgress() {
+        //do something
+
+    }
+
 }

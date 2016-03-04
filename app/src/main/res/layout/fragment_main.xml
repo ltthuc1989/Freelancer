@@ -75,23 +75,41 @@
 
     </RelativeLayout>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="0dp"
         android:layout_weight="33"
         android:background="#25183b"
-        android:gravity="center">
+        >
 
         <com.ltthuc.freelancer.CustomView.CircleProgressBar
             android:id="@+id/custom_progressBar"
             android:layout_width="@dimen/progressBar_dimen"
             android:layout_height="@dimen/progressBar_dimen"
             app:progress="0"
-
+            android:layout_centerInParent="true"
             app:progressBarThickness="@dimen/thick_ness"
 
             />
+        <!--<com.ltthuc.freelancer.CustomView.CountDownTimerView-->
+            <!--android:id="@+id/txtCountDown"-->
+            <!--android:layout_width="wrap_content"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_centerInParent="true"-->
+            <!--android:textSize="@dimen/count_down"-->
+            <!--android:textColor="@color/textColorPrimary"-->
+            <!--app:timeMilliSeconds="420000"-->
+            <!--android:layout_marginTop="@dimen/activity_vertical_margin"-->
+            <!--android:textAppearance="?android:attr/textAppearanceLarge" />-->
+        <TextView
+            android:layout_width="wrap_content"
+            android:id="@+id/txtCountDown"
+            android:layout_centerInParent="true"
+            android:text="asda"
+            android:textColor="@color/textColorPrimary"
+            android:textSize="@dimen/count_down"
+            android:layout_height="wrap_content" />
 
-    </LinearLayout>
+    </RelativeLayout>
 
 </LinearLayout>
