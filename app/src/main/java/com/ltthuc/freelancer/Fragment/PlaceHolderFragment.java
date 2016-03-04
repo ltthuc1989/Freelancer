@@ -14,9 +14,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.MediaController;
-import android.widget.TextView;
 
 import com.ltthuc.freelancer.CustomView.CircleProgressBar;
+import com.ltthuc.freelancer.CustomView.CountDownTimerView;
 import com.ltthuc.freelancer.CustomView.TextureVideoView;
 import com.ltthuc.freelancer.R;
 import com.ltthuc.freelancer.models.VideoModel;
@@ -57,8 +57,13 @@ public class PlaceHolderFragment extends Fragment implements CircleProgressBar.P
     @Bind(R.id.btnOption2)
     Button btnOption2;
     @Bind(R.id.txtCountDown)
-    TextView txtCountDown;
+    CountDownTimerView txtCountDown;
+    private boolean isPaused = false;
+    //Declare a variable to hold count down timer's paused status
+    private boolean isCanceled = false;
 
+    //Declare a variable to hold CountDownTimer remaining time
+    private long timeRemaining = 0;
     public PlaceHolderFragment() {
     }
 
@@ -95,10 +100,36 @@ public class PlaceHolderFragment extends Fragment implements CircleProgressBar.P
 
     }
     private void initProgressBar(){
-        VideoModel videoModel = videoModels_Option_1.get(0);
-        int duration = videoModel.getPlayTime()+videoModel.getBreakTime();
-        customProgressBar.setTxtCountDown(txtCountDown);
-        customProgressBar.setDuration(duration);
+//        VideoModel videoModel = videoModels_Option_1.get(0);
+//        int duration = videoModel.getPlayTime()+videoModel.getBreakTime();
+//        customProgressBar.setTxtCountDown(txtCountDown);
+//        customProgressBar.setDuration(duration);
+    }
+    private void initCoundownTimer(){
+       // txtCountDown.setTime(Constants.COUNT_DOWN_TIME);
+        txtCountDown.setOnTimerListener(new CountDownTimerView.TimerListener() {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                if(isPaused || isCanceled)
+                {
+                    //If the user request to cancel or paused the
+                    //CountDownTimer we will cancel the current instance
+                    txtCountDown.getmCountDownTimer().cancel();
+                }
+                else {
+                    //Display the remaining seconds to app interface
+                    //1 second = 1000 milliseconds
+                    txtCountDown.setText("" + millisUntilFinished / 1000);
+                    //Put count down timer remaining time in a variable
+                    timeRemaining = millisUntilFinished;
+                }
+            }
+
+            @Override
+            public void onFinish() {
+                txtCountDown.setText("Time up!");
+            }
+        });
     }
 
     private void initVideoView() {
@@ -110,9 +141,9 @@ public class PlaceHolderFragment extends Fragment implements CircleProgressBar.P
         mVideoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
             @Override
             public void onPrepared(final MediaPlayer mp) {
-                //mp.setLooping(true);
-                startVideoPlayback();
-                startVideoAnimation();
+                mp.setLooping(true);
+                mVideoView.startVideoPlayback();
+                mVideoView.startVideoAnimation();
             }
         });
 
@@ -129,16 +160,7 @@ public class PlaceHolderFragment extends Fragment implements CircleProgressBar.P
     }
 
 
-    private void startVideoPlayback() {
-        // "forces" anti-aliasing - but increases time for taking frames - so keep it disabled
-        // mVideoView.setScaleX(1.00001f);
-        mVideoView.start();
 
-    }
-
-    private void startVideoAnimation() {
-        mVideoView.animate().setDuration(mVideoView.getDuration()).start();
-    }
 
 
     private Drawable getThumbnail(String path) {
@@ -163,8 +185,10 @@ public class PlaceHolderFragment extends Fragment implements CircleProgressBar.P
                 break;
             case R.id.img_play:
                 if (mediaPlayer.isPlaying()) {
+                    isPaused = true;
                     mVideoView.getMediaPlayer().pause();
                 } else if (!mediaPlayer.isPlaying() && mediaPlayer != null) {
+                   isCanceled = false;
                     mediaPlayer.start();
                 }
                 break;
@@ -174,21 +198,7 @@ public class PlaceHolderFragment extends Fragment implements CircleProgressBar.P
         }
     }
 
-//    private void intCountDown() {
-//
-//        txtCountDown.setTime(50000);
-//        txtCountDown.setOnTimerListener(new CountDownTimerView.TimerListener() {
-//            @Override
-//            public void onTick(long millisUntilFinished) {
-//
-//            }
-//
-//            @Override
-//            public void onFinish() {
-//                //timerView.setText("Time up!");
-//            }
-//        });
-//    }
+
 
     @Override
     public void finishProgress() {

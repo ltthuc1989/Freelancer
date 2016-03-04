@@ -39,6 +39,7 @@ public class CountDownTimerView extends TextView {
 
     private CountDownTimer mCountDownTimer;
 
+
     public CountDownTimerView(Context context) {
         this(context, null);
     }
@@ -74,10 +75,17 @@ public class CountDownTimerView extends TextView {
         displayText();
     }
 
+    public CountDownTimer getmCountDownTimer() {
+        return mCountDownTimer;
+    }
+
+
+
     private void initCounter() {
         mCountDownTimer = new CountDownTimer(mMilliSeconds, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
+
                 calculateTime(millisUntilFinished);
                 if (mListener != null) {
                     mListener.onTick(millisUntilFinished);
@@ -140,8 +148,8 @@ public class CountDownTimerView extends TextView {
             buffer.append(" ");
         }
 
-        buffer.append(getTwoDigitNumber(mHours));
-        buffer.append(":");
+//        buffer.append(getTwoDigitNumber(mHours));
+//        buffer.append(":");
         buffer.append(getTwoDigitNumber(mMinutes));
         buffer.append(":");
         buffer.append(getTwoDigitNumber(mSeconds));

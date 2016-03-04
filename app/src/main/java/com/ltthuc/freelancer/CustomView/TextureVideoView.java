@@ -69,7 +69,7 @@ import java.util.Map;
  * </ol>
  */
 public class TextureVideoView extends TextureView
-    implements MediaPlayerControl {
+    implements MediaPlayerControl ,CircleProgressBar.ProgressBarCallback{
     private String TAG = "TextureVideoView";
     // settable by the client
     private Uri         mUri;
@@ -337,7 +337,7 @@ public class TextureVideoView extends TextureView
             // we don't set the target state here either, but preserve the
             // target state that was there before.
             mCurrentState = STATE_PREPARING;
-            attachMediaController();
+           // attachMediaController();
         } catch (IOException ex) {
             Log.w(TAG, "Unable to open content: " + mUri, ex);
             mCurrentState = STATE_ERROR;
@@ -358,7 +358,7 @@ public class TextureVideoView extends TextureView
             mMediaController.hide();
         }
         mMediaController = controller;
-        attachMediaController();
+      //  attachMediaController();
     }
 
     private void attachMediaController() {
@@ -684,6 +684,7 @@ public class TextureVideoView extends TextureView
             if(!isFirstInit) {
                 mCircleProgressBar.setDuration(playList.get(0).getPlayTime());
                 mCircleProgressBar.setProgressWithAnimation(mCircleProgressBar.getMax());
+                mCircleProgressBar.setProgressBarCallback(this);
                 isFirstInit=true;
             }
             if(mCurrentState==STATE_PAUSED){
@@ -778,6 +779,11 @@ public class TextureVideoView extends TextureView
         return mCanSeekForward;
     }
 
+    @Override
+    public void finishProgress() {
+        playNext();
+    }
+
     public int getAudioSessionId() {
         if (mAudioSession == 0) {
             MediaPlayer foo = new MediaPlayer();
@@ -786,7 +792,16 @@ public class TextureVideoView extends TextureView
         }
         return mAudioSession;
     }
+    public void startVideoPlayback() {
+        // "forces" anti-aliasing - but increases time for taking frames - so keep it disabled
+        // mVideoView.setScaleX(1.00001f);
+        start();
 
+    }
+
+    public  void startVideoAnimation() {
+      animate().setDuration(getDuration()).start();
+    }
     public CircleProgressBar getmCircleProgressBar() {
         return mCircleProgressBar;
     }
@@ -810,15 +825,20 @@ public class TextureVideoView extends TextureView
 
 
        /* Prepare the mediaplayer */
-            try {
-                mMediaPlayer.setDataSource(playList.get(currentPosition+1).getVideoPath());
-                mMediaPlayer.prepare();
-                currentPosition = currentPosition+1;
-            }catch (IOException err){
 
-            }
+                setVideoPath(playList.get(currentPosition+1).getVideoPath());
+                setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        mp.setLooping(true);
+                        startVideoPlayback();
+                        startVideoAnimation();
+                    }
+                });
+                currentPosition = currentPosition+1;
+
        /* start */
-            mMediaPlayer.start();
+           // mMediaPlayer.start();
         }
         else
         {
@@ -836,13 +856,20 @@ public class TextureVideoView extends TextureView
        /* Prepare the mediaplayer */
             try {
                 mMediaPlayer.setDataSource(playList.get(currentPosition-1).getVideoPath());
-                mMediaPlayer.prepare();
+                setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        mp.setLooping(true);
+                        startVideoPlayback();
+                        startVideoAnimation();
+                    }
+                });
                 currentPosition = currentPosition-1;
             }catch (IOException err){
 
             }
        /* start */
-            mMediaPlayer.start();
+
         }
         else
         {

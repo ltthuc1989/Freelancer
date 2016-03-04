@@ -19,6 +19,8 @@ public class Constants {
 
     public final   static int MEDIAPLAYER_SIZE = 7;
 
+    public final   static long COUNT_DOWN_TIME = 7*60000;
+
 
 
 }

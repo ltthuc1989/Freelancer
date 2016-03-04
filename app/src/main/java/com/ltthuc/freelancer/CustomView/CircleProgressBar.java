@@ -239,6 +239,7 @@ public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUp
         objectAnimator.setDuration(getDuration());
         objectAnimator.setInterpolator(new DecelerateInterpolator());
         objectAnimator.addUpdateListener(this);
+        objectAnimator.addListener(this);
         objectAnimator.start();
 
 
@@ -253,7 +254,7 @@ public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUp
 
     @Override
     public void onAnimationUpdate(ValueAnimator animation) {
-        txtCountDown.setText(String.valueOf(getCurrentProgress()));
+       // txtCountDown.setText(String.valueOf(getCurrentProgress()));
 
     }
 
