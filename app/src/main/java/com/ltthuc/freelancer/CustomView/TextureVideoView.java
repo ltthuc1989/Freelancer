@@ -39,6 +39,7 @@ import android.view.accessibility.AccessibilityNodeInfo;
 import android.widget.MediaController;
 import android.widget.MediaController.MediaPlayerControl;
 
+import com.ltthuc.freelancer.Utils.Constants;
 import com.ltthuc.freelancer.models.VideoModel;
 
 import java.io.IOException;
@@ -51,7 +52,7 @@ import java.util.Map;
  * providers), takes care of computing its measurement from the video so that
  * it can be used in any layout manager, and provides various display options
  * such as scaling and tinting.<p>
- *
+ * <p/>
  * <em>Note: VideoView does not retain its full state when going into the
  * background.</em>  In particular, it does not restore the current play state,
  * play position or selected tracks.  Applications should
@@ -60,28 +61,28 @@ import java.util.Map;
  * {@link android.app.Activity#onRestoreInstanceState}.<p>
  * Also note that the audio session id (from {@link #getAudioSessionId}) may
  * change from its previously returned value when the VideoView is restored.<p>
- *
+ * <p/>
  * This code is based on the official Android sources for 6.0.1_r10 with the following differences:
  * <ol>
- *     <li>extends {@link TextureView} instead of a {@link android.view.SurfaceView}
- *     allowing proper view animations</li>
- *     <li>removes code that uses hidden APIs and thus is not available (e.g. subtitle support)</li>
+ * <li>extends {@link TextureView} instead of a {@link android.view.SurfaceView}
+ * allowing proper view animations</li>
+ * <li>removes code that uses hidden APIs and thus is not available (e.g. subtitle support)</li>
  * </ol>
  */
 public class TextureVideoView extends TextureView
-    implements MediaPlayerControl ,CircleProgressBar.ProgressBarCallback{
+        implements MediaPlayerControl, CircleProgressBar.ProgressBarCallback {
     private String TAG = "TextureVideoView";
     // settable by the client
-    private Uri         mUri;
+    private Uri mUri;
     private Map<String, String> mHeaders;
 
     // all possible internal states
-    private static final int STATE_ERROR              = -1;
-    private static final int STATE_IDLE               = 0;
-    private static final int STATE_PREPARING          = 1;
-    private static final int STATE_PREPARED           = 2;
-    private static final int STATE_PLAYING            = 3;
-    private static final int STATE_PAUSED             = 4;
+    private static final int STATE_ERROR = -1;
+    private static final int STATE_IDLE = 0;
+    private static final int STATE_PREPARING = 1;
+    private static final int STATE_PREPARED = 2;
+    private static final int STATE_PLAYING = 3;
+    private static final int STATE_PAUSED = 4;
     private static final int STATE_PLAYBACK_COMPLETED = 5;
 
     // mCurrentState is a TextureVideoView object's current state.
@@ -90,43 +91,59 @@ public class TextureVideoView extends TextureView
     // calling pause() intends to bring the object to a target state
     // of STATE_PAUSED.
     private int mCurrentState = STATE_IDLE;
-    private int mTargetState  = STATE_IDLE;
+    private int mTargetState = STATE_IDLE;
     //Circler progress bar
     private CircleProgressBar mCircleProgressBar;
 
     // All the stuff we need for playing and showing a video
-    private Surface     mSurface = null;
-    private MediaPlayer mMediaPlayer = null;
-    private int         mAudioSession;
-    private int         mVideoWidth;
-    private int         mVideoHeight;
+    private Surface mSurface = null;
+    private  MediaPlayer mMediaPlayer = null;
+
+    private int mAudioSession;
+    private int mVideoWidth;
+    private int mVideoHeight;
     private MediaController mMediaController;
     private OnCompletionListener mOnCompletionListener;
     private MediaPlayer.OnPreparedListener mOnPreparedListener;
-    private int         mCurrentBufferPercentage;
+    private int mCurrentBufferPercentage;
     private OnErrorListener mOnErrorListener;
-    private OnInfoListener  mOnInfoListener;
-    private int         mSeekWhenPrepared;  // recording the seek position while preparing
-    private boolean     mCanPause;
-    private boolean     mCanSeekBack;
-    private boolean     mCanSeekForward;
+    private OnInfoListener mOnInfoListener;
+    private int mSeekWhenPrepared;  // recording the seek position while preparing
+    private boolean mCanPause;
+    private boolean mCanSeekBack;
+    private boolean mCanSeekForward;
     boolean isFirstInit = false;
-    private int currentPosition;
+    private int currentPositionMedia = 0;
     private int mediaSize;
     private List<VideoModel> playList;
+    public long totalPlayTime = Constants.COUNT_DOWN_TIME;
+    TextureVideoViewListener listener;
+
+
+    Context context;
+
+    public int getCurrentPositionMedia() {
+        return currentPositionMedia;
+    }
 
     public TextureVideoView(Context context) {
         super(context);
+        this.context = context;
         initVideoView();
+
     }
 
     public TextureVideoView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
+        this.context = context;
         initVideoView();
+
     }
 
     public TextureVideoView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+        this.context = context;
+
         initVideoView();
     }
 
@@ -150,10 +167,10 @@ public class TextureVideoView extends TextureView
                 height = heightSpecSize;
 
                 // for compatibility, we adjust size based on aspect ratio
-                if ( mVideoWidth * height  < width * mVideoHeight ) {
+                if (mVideoWidth * height < width * mVideoHeight) {
                     //Log.i("@@@", "image too wide, correcting");
                     width = height * mVideoWidth / mVideoHeight;
-                } else if ( mVideoWidth * height  > width * mVideoHeight ) {
+                } else if (mVideoWidth * height > width * mVideoHeight) {
                     //Log.i("@@@", "image too tall, correcting");
                     height = width * mVideoHeight / mVideoWidth;
                 }
@@ -210,12 +227,12 @@ public class TextureVideoView extends TextureView
         return getDefaultSize(desiredSize, measureSpec);
     }
 
-    public void setCurrentPosition(int currentPosition) {
-        this.currentPosition = currentPosition;
+    public void setCurrentPositionMedia(int currentPositionMedia) {
+        this.currentPositionMedia = currentPositionMedia;
     }
 
     public int getMediaSize() {
-        mediaSize =playList.size();
+        mediaSize = playList.size();
         return mediaSize;
     }
 
@@ -239,7 +256,8 @@ public class TextureVideoView extends TextureView
         setFocusableInTouchMode(true);
         requestFocus();
         mCurrentState = STATE_IDLE;
-        mTargetState  = STATE_IDLE;
+        mTargetState = STATE_IDLE;
+
 
     }
 
@@ -294,7 +312,8 @@ public class TextureVideoView extends TextureView
             mMediaPlayer.release();
             mMediaPlayer = null;
             mCurrentState = STATE_IDLE;
-            mTargetState  = STATE_IDLE;
+            playList.get(currentPositionMedia).setCurrentState(mCurrentState);
+            mTargetState = STATE_IDLE;
             mCircleProgressBar = null;
             AudioManager am = (AudioManager) getContext().getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
             am.abandonAudioFocus(null);
@@ -337,7 +356,7 @@ public class TextureVideoView extends TextureView
             // we don't set the target state here either, but preserve the
             // target state that was there before.
             mCurrentState = STATE_PREPARING;
-           // attachMediaController();
+            // attachMediaController();
         } catch (IOException ex) {
             Log.w(TAG, "Unable to open content: " + mUri, ex);
             mCurrentState = STATE_ERROR;
@@ -358,14 +377,14 @@ public class TextureVideoView extends TextureView
             mMediaController.hide();
         }
         mMediaController = controller;
-      //  attachMediaController();
+        //  attachMediaController();
     }
 
     private void attachMediaController() {
         if (mMediaPlayer != null && mMediaController != null) {
             mMediaController.setMediaPlayer(this);
             View anchorView = this.getParent() instanceof View ?
-                    (View)this.getParent() : this;
+                    (View) this.getParent() : this;
             mMediaController.setAnchorView(anchorView);
             mMediaController.setEnabled(isInPlaybackState());
         }
@@ -433,6 +452,7 @@ public class TextureVideoView extends TextureView
             new OnCompletionListener() {
                 public void onCompletion(MediaPlayer mp) {
                     mCurrentState = STATE_PLAYBACK_COMPLETED;
+                    //  playList.get(currentPositionMedia).setCurrentState(mCurrentState);
                     mTargetState = STATE_PLAYBACK_COMPLETED;
                     if (mMediaController != null) {
                         mMediaController.hide();
@@ -445,7 +465,7 @@ public class TextureVideoView extends TextureView
 
     private OnInfoListener mInfoListener =
             new OnInfoListener() {
-                public  boolean onInfo(MediaPlayer mp, int arg1, int arg2) {
+                public boolean onInfo(MediaPlayer mp, int arg1, int arg2) {
                     if (mOnInfoListener != null) {
                         mOnInfoListener.onInfo(mp, arg1, arg2);
                     }
@@ -518,8 +538,7 @@ public class TextureVideoView extends TextureView
      *
      * @param l The callback that will be run
      */
-    public void setOnPreparedListener(MediaPlayer.OnPreparedListener l)
-    {
+    public void setOnPreparedListener(MediaPlayer.OnPreparedListener l) {
         mOnPreparedListener = l;
     }
 
@@ -529,8 +548,7 @@ public class TextureVideoView extends TextureView
      *
      * @param l The callback that will be run
      */
-    public void setOnCompletionListener(OnCompletionListener l)
-    {
+    public void setOnCompletionListener(OnCompletionListener l) {
         mOnCompletionListener = l;
     }
 
@@ -542,8 +560,7 @@ public class TextureVideoView extends TextureView
      *
      * @param l The callback that will be run
      */
-    public void setOnErrorListener(OnErrorListener l)
-    {
+    public void setOnErrorListener(OnErrorListener l) {
         mOnErrorListener = l;
     }
 
@@ -557,11 +574,10 @@ public class TextureVideoView extends TextureView
         mOnInfoListener = l;
     }
 
-    SurfaceTextureListener mSurfaceTextureListener = new SurfaceTextureListener()
-    {
+    SurfaceTextureListener mSurfaceTextureListener = new SurfaceTextureListener() {
         @Override
         public void onSurfaceTextureSizeChanged(final SurfaceTexture surface, final int width, final int height) {
-            boolean isValidState =  (mTargetState == STATE_PLAYING);
+            boolean isValidState = (mTargetState == STATE_PLAYING);
             boolean hasValidSize = (width > 0 && height > 0);
             if (mMediaPlayer != null && isValidState && hasValidSize) {
                 if (mSeekWhenPrepared != 0) {
@@ -588,6 +604,7 @@ public class TextureVideoView extends TextureView
             release(true);
             return true;
         }
+
         @Override
         public void onSurfaceTextureUpdated(final SurfaceTexture surface) {
             // do nothing
@@ -597,6 +614,7 @@ public class TextureVideoView extends TextureView
     /*
      * release the media player in any state
      */
+
     private void release(boolean cleartargetstate) {
         if (mMediaPlayer != null) {
             mMediaPlayer.reset();
@@ -604,7 +622,7 @@ public class TextureVideoView extends TextureView
             mMediaPlayer = null;
             mCurrentState = STATE_IDLE;
             if (cleartargetstate) {
-                mTargetState  = STATE_IDLE;
+                mTargetState = STATE_IDLE;
             }
             AudioManager am = (AudioManager) getContext().getApplicationContext().getSystemService(Context.AUDIO_SERVICE);
             am.abandonAudioFocus(null);
@@ -628,8 +646,7 @@ public class TextureVideoView extends TextureView
     }
 
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event)
-    {
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
         boolean isKeyCodeSupported = keyCode != KeyEvent.KEYCODE_BACK &&
                 keyCode != KeyEvent.KEYCODE_VOLUME_UP &&
                 keyCode != KeyEvent.KEYCODE_VOLUME_DOWN &&
@@ -681,18 +698,10 @@ public class TextureVideoView extends TextureView
     public void start() {
         if (isInPlaybackState()) {
             mMediaPlayer.start();
-            if(!isFirstInit) {
-                mCircleProgressBar.setDuration(playList.get(0).getPlayTime());
-                mCircleProgressBar.setProgressWithAnimation(mCircleProgressBar.getMax());
-                mCircleProgressBar.setProgressBarCallback(this);
-                isFirstInit=true;
-            }
-            if(mCurrentState==STATE_PAUSED){
-                mCircleProgressBar.start();
-            }
-
             mCurrentState = STATE_PLAYING;
+            playList.get(currentPositionMedia).setCurrentState(mCurrentState);
         }
+
         mTargetState = STATE_PLAYING;
     }
 
@@ -704,6 +713,7 @@ public class TextureVideoView extends TextureView
                 mCircleProgressBar.pause();
                 mMediaPlayer.pause();
                 mCurrentState = STATE_PAUSED;
+                playList.get(currentPositionMedia).setCurrentState(mCurrentState);
             }
         }
         mTargetState = STATE_PAUSED;
@@ -781,7 +791,10 @@ public class TextureVideoView extends TextureView
 
     @Override
     public void finishProgress() {
-        playNext();
+        listener.onProgressCompleted();
+        listener.onDelaySecondForPlayNext(true);
+
+
     }
 
     public int getAudioSessionId() {
@@ -792,22 +805,37 @@ public class TextureVideoView extends TextureView
         }
         return mAudioSession;
     }
-    public void startVideoPlayback() {
+
+    public void startVideoPlayback(int mode) {
         // "forces" anti-aliasing - but increases time for taking frames - so keep it disabled
         // mVideoView.setScaleX(1.00001f);
         start();
+        resetCircleProgressBar(currentPositionMedia,mode);
+        mCircleProgressBar.setProgressBarCallback(this);
+
 
     }
 
-    public  void startVideoAnimation() {
-      animate().setDuration(getDuration()).start();
+    public void startVideoAnimation() {
+        animate().setDuration(getDuration()).start();
     }
+
     public CircleProgressBar getmCircleProgressBar() {
         return mCircleProgressBar;
     }
 
-    public void setmCircleProgressBar(CircleProgressBar mCircleProgressBar) {
+    public void setCircleProgressBar(CircleProgressBar mCircleProgressBar) {
         this.mCircleProgressBar = mCircleProgressBar;
+    }
+
+    public void resetCircleProgressBar(int id,int mode) {
+        //mCircleProgressBar.setProgress(0);
+        if(mode ==1) {
+            mCircleProgressBar.setDuration(playList.get(id).getPlayTime());
+        }else{
+            mCircleProgressBar.setDuration(playList.get(id).getBreakTime());
+        }
+        mCircleProgressBar.setProgressWithAnimation(mCircleProgressBar.getMax());
     }
 
     public MediaController getmMediaController() {
@@ -817,66 +845,69 @@ public class TextureVideoView extends TextureView
     public void setmMediaController(MediaController mMediaController) {
         this.mMediaController = mMediaController;
     }
-    public void playNext(){
-        if(currentPosition<getMediaSize())
-        {
+
+    public void playNext(int mode) {
+
+        if (currentPositionMedia < getMediaSize() - 1) {
+            currentPositionMedia = currentPositionMedia + 1;
             mMediaPlayer.reset();
-       /* load the new source */
 
 
-       /* Prepare the mediaplayer */
+            playWithPreparing(currentPositionMedia,mode);
 
-                setVideoPath(playList.get(currentPosition+1).getVideoPath());
-                setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                    @Override
-                    public void onPrepared(MediaPlayer mp) {
-                        mp.setLooping(true);
-                        startVideoPlayback();
-                        startVideoAnimation();
-                    }
-                });
-                currentPosition = currentPosition+1;
-
-       /* start */
-           // mMediaPlayer.start();
         }
-        else
-        {
-       /* release mediaplayer */
-            mMediaPlayer.release();
-        }
+
     }
-    public void playPrevious(){
-        if(currentPosition>0)
-        {
+
+    public void playPrevious(int mode) {
+        if (playList.get(currentPositionMedia).getCurrentState() != STATE_PLAYBACK_COMPLETED)
+            playList.get(currentPositionMedia).setCurrentState(STATE_PLAYBACK_COMPLETED);
+        if (currentPositionMedia > 0) {
+            currentPositionMedia = currentPositionMedia - 1;
             mMediaPlayer.reset();
-       /* load the new source */
 
+            playWithPreparing(currentPositionMedia,mode);
+        } else {
+            currentPositionMedia = 0;
+            mMediaPlayer.reset();
 
-       /* Prepare the mediaplayer */
-            try {
-                mMediaPlayer.setDataSource(playList.get(currentPosition-1).getVideoPath());
-                setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                    @Override
-                    public void onPrepared(MediaPlayer mp) {
-                        mp.setLooping(true);
-                        startVideoPlayback();
-                        startVideoAnimation();
-                    }
-                });
-                currentPosition = currentPosition-1;
-            }catch (IOException err){
+            playWithPreparing(0,mode);
+        }
 
+    }
+
+    void playWithPreparing(int id,final int mode) {
+        setVideoPath(playList.get(id).getMediaPath());
+        setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(final MediaPlayer mp) {
+                if (currentPositionMedia != 0) {
+                    listener.onDelaySecondForPlayNext(false);
+                }
+                mp.setLooping(true);
+                startVideoPlayback(mode);
+                startVideoAnimation();
             }
-       /* start */
+        });
 
-        }
-        else
-        {
-       /* release mediaplayer */
-            mMediaPlayer.release();
-        }
     }
 
+    public interface TextureVideoViewListener {
+        void onPlayCompleted();
+
+        void onProgressCompleted();
+
+        void onDelaySecondForPlayNext(Boolean b);
+
+        void onPlayBackgroundMusic();
+    }
+
+    public TextureVideoViewListener getListener() {
+        return listener;
+    }
+
+    public void setTextureListener(TextureVideoViewListener listener) {
+        this.listener = listener;
+    }
 
 }

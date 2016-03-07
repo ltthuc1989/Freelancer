@@ -5,6 +5,7 @@ import android.content.res.TypedArray;
 import android.os.CountDownTimer;
 import android.text.TextUtils;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.widget.TextView;
 
 import com.ltthuc.freelancer.R;
@@ -30,6 +31,7 @@ public class CountDownTimerView extends TextView {
     private long mMinutes = 0;
     private long mSeconds = 0;
     private long mMilliSeconds = 0;
+
 
     private TimerListener mListener;
 
@@ -82,9 +84,11 @@ public class CountDownTimerView extends TextView {
 
 
     private void initCounter() {
+        Log.d("ThucInitCountierm",String.valueOf(mMilliSeconds));
         mCountDownTimer = new CountDownTimer(mMilliSeconds, 1000) {
             @Override
             public void onTick(long millisUntilFinished) {
+                Log.d("ThucMillionFinish",String.valueOf(millisUntilFinished));
 
                 calculateTime(millisUntilFinished);
                 if (mListener != null) {
@@ -126,17 +130,25 @@ public class CountDownTimerView extends TextView {
 
     public void setTime(long milliSeconds) {
         mMilliSeconds = milliSeconds;
+        Log.d("ThucMilliSeconds",String.valueOf(milliSeconds));
+
         initCounter();
         calculateTime(milliSeconds);
     }
 
     private void calculateTime(long milliSeconds) {
-        mSeconds = (milliSeconds / 1000);
+        Log.d("ThucMillionsecon2",String.valueOf(milliSeconds));
+
+        mSeconds = (milliSeconds/ 1000);
         mMinutes = mSeconds / 60;
         mSeconds = mSeconds % 60;
 
         mHours = mMinutes / 60;
         mMinutes = mMinutes % 60;
+        Log.d("ThucMinutesTime",String.valueOf(mMinutes));
+        Log.d("ThucSecondssTime",String.valueOf(mSeconds));
+
+
 
         displayText();
     }

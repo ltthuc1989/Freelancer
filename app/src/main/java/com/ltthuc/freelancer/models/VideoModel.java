@@ -7,27 +7,33 @@ import com.ltthuc.freelancer.Utils.Constants;
 /**
  * Created by Thuc on 3/3/2016.
  */
-public class VideoModel {
+public class VideoModel extends BaseMedia{
     int option;
     int rawFile;
     int playTime;
     int breakTime;
     int id;
-    String videoPath;
-    Activity context;
+
+
+
 
     public VideoModel(Activity context, int id, int option, int rawFile) {
-        this.id = id;
+         super(context,id,rawFile);
         this.option = option;
-        this.rawFile = rawFile;
-        this.context = context;
+
         initPlayTime();
 
     }
 
-    public String getVideoPath() {
-        return "android.resource://" + context.getPackageName() + "/" + rawFile;
+    public int getCurrentState() {
+        return mCurrentState;
     }
+
+    public void setCurrentState(int mCurrentState) {
+        this.mCurrentState = mCurrentState;
+    }
+
+
 
     public int getOption() {
         return option;
@@ -54,7 +60,7 @@ public class VideoModel {
                 } else {
                     playTime = Constants.PLAY_TIME_OPTION_1 * 2;
                 }
-
+                breakTime = Constants.BREAK_TIME_OPTION_1;
                 break;
             case 2:
                 if (id == 0 || id == 6) {
@@ -62,6 +68,7 @@ public class VideoModel {
                 } else {
                     playTime = Constants.PLAY_TIME_OPTION_2 + Constants.BREAK_TIME_OPTION_2;
                 }
+                breakTime = Constants.BREAK_TIME_OPTION_2;
                 break;
         }
 
@@ -71,21 +78,7 @@ public class VideoModel {
         return playTime;
     }
 
-    public void setPlayTime(int playTime) {
-        this.playTime = playTime;
-    }
 
-    public void initBreakTime() {
-        switch (option) {
-            case 1:
-                breakTime = Constants.BREAK_TIME_OPTION_1;
-                break;
-            case 2:
-                breakTime = Constants.BREAK_TIME_OPTION_2;
-                break;
-        }
-
-    }
 
     public int getBreakTime() {
         return breakTime;

@@ -51,7 +51,7 @@ public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUp
      * Start the progress at 12 o'clock
      */
     private int startAngle = -90;
-    private int color = Color.DKGRAY;
+    private int color = Color.WHITE;
     private int duration;
 
     private RectF rectF;
@@ -74,6 +74,7 @@ public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUp
     public int getDuration() {
         return duration;
     }
+
 
     public void setDuration(int duration) {
         this.duration = duration;
@@ -177,7 +178,7 @@ public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUp
         super.onDraw(canvas);
 
         canvas.drawOval(rectF, backgroundPaint);
-        float angle = 360 * progress / max;
+        float angle = -360 * progress / max;
         canvas.drawArc(rectF, getStartAngle(), angle, false, foregroundPaint);
 
     }
@@ -234,7 +235,7 @@ public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUp
      * @param progress The progress it should animate to it.
      */
     public void setProgressWithAnimation(float progress) {
-
+         setProgress(0);
          objectAnimator = ObjectAnimator.ofFloat(this, "progress", progress);
         objectAnimator.setDuration(getDuration());
         objectAnimator.setInterpolator(new DecelerateInterpolator());
@@ -244,9 +245,8 @@ public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUp
 
 
 
-
-
     }
+
 
     public ObjectAnimator getObjectAnimator() {
         return objectAnimator;
@@ -265,6 +265,7 @@ public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUp
 
     @Override
     public void onAnimationEnd(Animator animation) {
+
         progressBarCallback.finishProgress();
 
     }
@@ -272,18 +273,24 @@ public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUp
     @Override
     public void onAnimationCancel(Animator animation) {
 
+
+
     }
 
     @Override
     public void onAnimationRepeat(Animator animation) {
 
+
     }
 
     public void pause() {
+
         if(objectAnimator != null) {
-            mAnimationTime = objectAnimator.getCurrentPlayTime();
+            mAnimationTime= objectAnimator.getCurrentPlayTime();
+           // setProgress(getCurrentProgress());
             objectAnimator.cancel();
-            setProgress(getCurrentProgress());
+
+
         }
     }
 
@@ -292,12 +299,16 @@ public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUp
             objectAnimator.start();
             objectAnimator.setCurrentPlayTime(mAnimationTime);
         }
+
     }
+
 
     public float getCurrentProgress(){
         float duration =(float)getDuration();
         float animationTime =(float)mAnimationTime;
-        mCurrentProgress = (animationTime/duration)*100;
+       // float max = getMax();
+        mCurrentProgress =(animationTime/duration)*100;
+       // mCurrentProgress = (float)getMax() - remainProgress;
 
 
         return mCurrentProgress;
@@ -313,6 +324,7 @@ public class CircleProgressBar extends View implements ObjectAnimator.AnimatorUp
     public void setProgressBarCallback(ProgressBarCallback progressBarCallback) {
         this.progressBarCallback = progressBarCallback;
     }
+
 }
 
 
