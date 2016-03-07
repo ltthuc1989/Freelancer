@@ -20,6 +20,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.Resources;
+import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -36,6 +37,7 @@ import android.view.TextureView;
 import android.view.View;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.widget.FrameLayout;
 import android.widget.MediaController;
 import android.widget.MediaController.MediaPlayerControl;
 
@@ -753,7 +755,32 @@ public class TextureVideoView extends TextureView
             mSeekWhenPrepared = msec;
         }
     }
+    public void updateTextureViewSize(int viewWidth, int viewHeight) {
+        float scaleX = 1.0f;
+        float scaleY = 1.0f;
 
+        if (mVideoWidth > viewWidth && mVideoHeight > viewHeight) {
+            scaleX = mVideoWidth / viewWidth;
+            scaleY = mVideoHeight / viewHeight;
+        } else if (mVideoWidth < viewWidth && mVideoHeight < viewHeight) {
+            scaleY = viewWidth / mVideoWidth;
+            scaleX = viewHeight / mVideoHeight;
+        } else if (viewWidth > mVideoWidth) {
+            scaleY = (viewWidth / mVideoWidth) / (viewHeight / mVideoHeight);
+        } else if (viewHeight > mVideoHeight) {
+            scaleX = (viewHeight / mVideoHeight) / (viewWidth / mVideoWidth);
+        }
+
+        // Calculate pivot points, in our case crop from center
+        int pivotPointX = viewWidth / 2;
+        int pivotPointY = viewHeight / 2;
+
+        Matrix matrix = new Matrix();
+        matrix.setScale(scaleX, scaleY, pivotPointX, pivotPointY);
+
+        setTransform(matrix);
+        setLayoutParams(new FrameLayout.LayoutParams(viewWidth, viewHeight));
+    }
     @Override
     public boolean isPlaying() {
         return isInPlaybackState() && mMediaPlayer.isPlaying();

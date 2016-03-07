@@ -8,4 +8,5 @@
     <dimen name = "thick_ness">10dp</dimen>
     <dimen name = "count_down">35sp</dimen>
     <dimen name = "txt_next">43sp</dimen>
+    <dimen name ="dialog">100dp</dimen>
 </resources>
