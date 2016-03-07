@@ -161,7 +161,9 @@ public class PlaceHolderFragment extends Fragment implements CircleProgressBar.P
        if (txtCountDown.getmCountDownTimer() != null) {
            txtCountDown.stopCountDown();
        }
-       mVideoView.getMediaPlayer().start();
+       if(mediaPlayer.isPlaying()) {
+           mediaPlayer.start();
+       }
 
        mVideoView.totalPlayTime = totalTime - countStep * Constants.ONE_MINUTE;
        restartTimer(mVideoView.totalPlayTime);
